@@ -16,6 +16,9 @@ const config = {
   i18n: {
     locales: ['en'],
     defaultLocale: 'en'
+  },
+  experimental: {
+    instrumentationHook: true
   }
 }
 

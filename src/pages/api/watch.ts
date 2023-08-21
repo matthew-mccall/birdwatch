@@ -1,16 +1,16 @@
 import { type NextApiHandler } from 'next'
-import { z } from 'zod'
+import { ZodError, z } from 'zod'
 
 import { watcher } from '~/middleware/watcher'
 
 const WatchBody = z.object({
-  crn: z.string().length(6),
+  crn: z.coerce.number(),
   email: z.string().email()
 })
 
 const UnwatchBody = z.object({
   email: z.string().email(),
-  crn: z.string().length(6).optional()
+  crn: z.coerce.number().optional()
 })
 
 const register: NextApiHandler = (req, res) => {
@@ -23,14 +23,15 @@ const register: NextApiHandler = (req, res) => {
     return watcher.register(crn, email)
       .then(() => res.status(200).end())
       .catch((err) => {
-        if (err.message === 'not found') return res.status(404).end('could not find that CRN')
+        if (err.message === 'not found') return res.status(404).send('could not find that CRN')
 
         console.error(err)
 
         res.status(500).end()
       })
   } catch (err) {
-    return res.status(400).end(err)
+    if (err instanceof ZodError) return res.status(400).send(err.message)
+    else return res.status(500).end()
   }
 }
 
@@ -39,7 +40,7 @@ const unregister: NextApiHandler = (req, res) => {
     const {
       crn,
       email
-    } = WatchBody.parse(req.body)
+    } = UnwatchBody.parse(req.body)
 
     return watcher.purge(email, crn)
       .then(() => res.status(200).end())
@@ -49,7 +50,8 @@ const unregister: NextApiHandler = (req, res) => {
         res.status(500).end()
       })
   } catch (err) {
-    return res.status(400).end(err)
+    if (err instanceof ZodError) return res.status(400).send(err.message)
+    else return res.status(500).end()
   }
 }
 
@@ -60,7 +62,7 @@ const watch: NextApiHandler = (req, res) => {
   switch (req.method) {
     case 'POST': return register(req, res)
     case 'DELETE': return unregister(req, res)
-    default: return res.status(405).end('Method not allowed')
+    default: return res.status(405).send('Method not allowed')
   }
 }
 

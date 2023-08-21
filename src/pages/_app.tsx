@@ -1,6 +1,7 @@
 import { type AppType } from 'next/dist/shared/lib/utils'
 import Head from 'next/head'
 import { Theme } from 'react-daisyui'
+import Reporter from '~/components/layout/Reporter'
 import ThemeSwitcher from '~/components/layout/ThemeSwitcher'
 
 import '~/styles/globals.css'
@@ -15,9 +16,11 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       </Head>
 
       <Theme className='min-h-screen flex flex-col'>
-        <Component {...pageProps} />
+        <Reporter>
+          <Component {...pageProps} />
 
-        <ThemeSwitcher />
+          <ThemeSwitcher />
+        </Reporter>
       </Theme>
     </>
   )

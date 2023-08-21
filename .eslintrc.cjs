@@ -39,7 +39,7 @@ const config = {
     '@typescript-eslint/no-invalid-void-type': 'off',
     '@typescript-eslint/explicit-function-return-type': 'warn',
     '@typescript-eslint/method-signature-style': 'off',
-    '@typescript-eslint/no-non-null': 'warn'
+    '@typescript-eslint/no-non-null-assertion': 'warn'
   }
 }
 

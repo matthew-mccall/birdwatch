@@ -15,14 +15,14 @@ const GITHUB_API = 'https://api.github.com'
 const GITHUB_CDN = 'https://raw.githubusercontent.com'
 
 interface WatcherRow {
-  crn: string
+  crn: number
   emails: string[]
 }
 
 interface Section {
   cap: number
   rem: number
-  crn: string
+  crn: number
 }
 
 interface Course {
@@ -41,8 +41,9 @@ const mailer = sendmail({})
 
 class Watcher {
   db: Knex
-  listeners = new Map<string, string[]>()
+  listeners = new Map<number, string[]>()
   courseData?: Department[]
+  initialized = false
 
   constructor (db: Knex) {
     this.db = db
@@ -52,25 +53,32 @@ class Watcher {
    * Fetch listeners from database
    */
   async init (): Promise<void> {
-    await db('watchers')
-      .select(['email', 'crns'])
-      .then((rows: WatcherRow[]) => {
-        for (const row of rows) {
-          this.listeners.set(row.crn, row.emails)
+    if (!this.initialized) {
+      this.initialized = true
 
-          console.log(`init listening for ${row.crn}`)
-        }
-      })
+      await db('watchers')
+        .select(['crn', 'emails'])
+        .then((rows: WatcherRow[]) => {
+          for (const row of rows) {
+            this.listeners.set(row.crn, row.emails)
 
-    await this.scan()
+            console.log(`init listening for ${row.crn}`)
+          }
+        })
+
+      await this.scan()
+      this.watch()
+    }
   }
 
   /**
    * Scan for seat updates
    */
   scan (): Promise<void> {
+    console.log('beginning scan')
+
     return axios.get(`${GITHUB_API}/repos/quacs/quacs-data/contents/semester_data`)
-      .then(({ data: semesters }) => axios.get<Department[]>(`${GITHUB_CDN}/quacs/quacs-data/master/${semesters[semesters.length].path}/courses.json`))
+      .then(({ data: semesters }) => axios.get<Department[]>(`${GITHUB_CDN}/quacs/quacs-data/master/${semesters[semesters.length - 1].path}/courses.json`))
       .then(({ data: departments }) => {
         this.courseData = departments
 
@@ -107,12 +115,15 @@ class Watcher {
    * @param crn   The CRN
    * @param email The email
    */
-  async register (crn: string, email: string): Promise<void> {
+  async register (crn: number, email: string): Promise<void> {
     let found = false
 
-    for (const department of this?.courseData ?? []) {
+    if (!this.courseData) await this.scan()
+
+    for (const department of this.courseData!) {
       for (const course of department.courses) {
         for (const section of course.sections) {
+          console.log(section.crn, typeof section.crn, section.crn === 664437)
           if (section.crn === crn) {
             found = true
 
@@ -147,7 +158,7 @@ class Watcher {
    * @param email The email
    * @param crn   The CRN if only for one section
    */
-  async purge (email: string, crn?: string): Promise<void> {
+  async purge (email: string, crn?: number): Promise<void> {
     for (const [eCrn, list] of this.listeners.entries()) {
       if (crn && eCrn !== crn) continue
 
@@ -172,11 +183,10 @@ class Watcher {
    * Set up a cron job to watch for data updates
    */
   watch (): void {
-    cron.schedule('* */30 * * * *', this.scan as () => void)
+    cron.schedule('*/30 * * * *', this.scan as () => void)
   }
 }
 
 export const watcher = new Watcher(db)
 
 void watcher.init()
-watcher.watch()

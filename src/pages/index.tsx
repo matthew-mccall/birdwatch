@@ -3,12 +3,13 @@ import Image from 'next/image'
 import { useCallback, useContext, useRef } from 'react'
 import { Button, Input, Join, Tooltip } from 'react-daisyui'
 import { ReporterContext } from '~/components/layout/Reporter'
-import axios from 'axios'
+import { useFetcher } from '~/hooks/fetcher'
 
 import banner from 'public/images/banner.png'
 
 const Home: NextPage = () => {
   const { dispatch: report } = useContext(ReporterContext)
+  const fetcher = useFetcher()
 
   const formRef = useRef<HTMLFormElement>(null)
 
@@ -16,14 +17,14 @@ const Home: NextPage = () => {
     if (formRef.current && formRef.current.reportValidity()) {
       const data = new FormData(formRef.current)
 
-      axios.post('/api/watch', {
-        email: data.get('email')!,
-        crn: data.get('crn')!
+      fetcher.post('/api/watch', {
+        email: data.get('email'),
+        crn: data.get('crn')
       })
         .then(() => report({ status: 'success', message: 'Successfully registered' }))
-        .catch((err) => report({ status: 'error', message: err.message }))
+        .catch((err) => report({ status: 'error', message: err.response?.data ?? err.message }))
     }
-  }, [])
+  }, [report, fetcher])
 
   const unregister = useCallback(() => {
     if (formRef.current && formRef.current.reportValidity()) {
@@ -50,8 +51,8 @@ const Home: NextPage = () => {
         <Image className='drop-shadow-lg rounded-lg' src={banner} alt='QuACS Birdwatch' width={280} />
 
         <Join horizontal>
-          <Input id='email' required className='join-item' placeholder='Email...' type='email' />
-          <Input id='crn' required className='join-item' placeholder='CRN...' />
+          <Input name='email' required className='join-item' placeholder='Email...' type='email' />
+          <Input name='crn' required className='join-item' placeholder='CRN...' minLength={5} maxLength={5} />
         </Join>
 
         <Join horizontal>
