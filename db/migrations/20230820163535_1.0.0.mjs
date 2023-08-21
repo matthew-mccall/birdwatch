@@ -6,8 +6,8 @@
 export const up = (knex) => {
   return knex.schema
     .createTableIfNotExists('watchers', (table) => {
-      table.string('email', 255).primary()
-      table.specificType('crns', 'char(5) ARRAY')
+      table.specificType('crn', 'char(5)').primary()
+      table.specificType('emails', 'varchar(255) ARRAY')
     })
 }
 
