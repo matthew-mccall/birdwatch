@@ -101,6 +101,26 @@ class Watcher {
    * @param email The email
    */
   async register (crn: string, email: string): Promise<void> {
+    let found = false
+
+    for (const department of this?.courseData ?? []) {
+      for (const course of department.courses) {
+        for (const section of course.sections) {
+          if (section.crn === crn) {
+            found = true
+
+            break
+          }
+        }
+
+        if (found) break
+      }
+
+      if (found) break
+    }
+
+    if (!found) throw Error('not found')
+
     if (!this.listeners.has(crn)) this.listeners.set(crn, [])
 
     this.listeners.get(crn)?.push(email)

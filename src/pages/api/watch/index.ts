@@ -23,6 +23,8 @@ const watch: NextApiHandler = (req, res) => {
     return watcher.register(crn, email)
       .then(() => res.status(200).end())
       .catch((err) => {
+        if (err.message === 'not found') return res.status(404).end('could not find that CRN')
+
         console.error(err)
 
         res.status(500).end()
