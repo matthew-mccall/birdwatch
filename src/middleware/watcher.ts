@@ -57,6 +57,8 @@ class Watcher {
       .then((rows: WatcherRow[]) => {
         for (const row of rows) {
           this.listeners.set(row.crn, row.emails)
+
+          console.log(`init listening for ${row.crn}`)
         }
       })
 
@@ -76,9 +78,13 @@ class Watcher {
           for (const course of department.courses) {
             for (const section of course.sections) {
               if (this.listeners.has(section.crn) && section.rem) {
+                const recipients = this.listeners.get(section.crn)?.join(', ') ?? ''
+
+                console.log(`emailing ${recipients}`)
+
                 void mailer({
                   from: SENDER,
-                  to: this.listeners.get(section.crn)?.join(', ') ?? '',
+                  to: recipients,
                   subject: `Course [${course.title}] has a seat available!`,
                   text: `${section.rem}/${section.cap} available`
                 }, console.error)
@@ -88,6 +94,7 @@ class Watcher {
                   .where({
                     crn: section.crn
                   })
+                  .then(() => console.log(`deleted ${section.crn}`))
               }
             }
           }
@@ -132,6 +139,7 @@ class Watcher {
       .where({
         crn
       })
+      .then(() => console.log(`added ${email} to ${crn}`))
   }
 
   /**
@@ -152,6 +160,7 @@ class Watcher {
           .where({
             crn
           })
+          .then(() => console.log(`removed ${email} from ${crn}`))
       }
     }
   }
