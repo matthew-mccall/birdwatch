@@ -1,18 +1,71 @@
 import { type NextPage } from 'next'
-import Head from 'next/head'
+import Image from 'next/image'
+import { useCallback, useContext, useRef } from 'react'
+import { Button, Input, Join, Tooltip } from 'react-daisyui'
+import { ReporterContext } from '~/components/layout/Reporter'
+import axios from 'axios'
+
+import banner from 'public/images/banner.png'
 
 const Home: NextPage = () => {
+  const { dispatch: report } = useContext(ReporterContext)
+
+  const formRef = useRef<HTMLFormElement>(null)
+
+  const register = useCallback(() => {
+    if (formRef.current && formRef.current.reportValidity()) {
+      const data = new FormData(formRef.current)
+
+      axios.post('/api/watch', {
+        email: data.get('email')!,
+        crn: data.get('crn')!
+      })
+        .then(() => report({ status: 'success', message: 'Successfully registered' }))
+        .catch((err) => report({ status: 'error', message: err.message }))
+    }
+  }, [])
+
+  const unregister = useCallback(() => {
+    if (formRef.current && formRef.current.reportValidity()) {
+      
+    }
+  }, [])
+
+  const purge = useCallback(() => {
+    const crnInput = document.getElementById('crn') as HTMLInputElement | null
+    if (!crnInput) return
+
+    crnInput.required = false
+
+    if (formRef.current && formRef.current.reportValidity()) {
+
+    }
+
+    crnInput.required = true
+  }, [])
+
   return (
     <>
-      <Head>
-        <title>Birdwatch</title>
-        <meta name='description' content='Get notified when seats free up in an RPI course section' />
-        <link rel='icon' href='https://quacs.org/fall2023/img/icons/favicon-32x32.png' />
-      </Head>
+      <form className='flex flex-col grow justify-center items-center gap-12' ref={formRef} onSubmit={(e) => e.preventDefault()}>
+        <Image className='drop-shadow-lg rounded-lg' src={banner} alt='QuACS Birdwatch' width={280} />
 
-      <main>
+        <Join horizontal>
+          <Input id='email' required className='join-item' placeholder='Email...' type='email' />
+          <Input id='crn' required className='join-item' placeholder='CRN...' />
+        </Join>
 
-      </main>
+        <Join horizontal>
+          <Button color='primary' className='join-item' onClick={register}>Register</Button>
+          <Button color='neutral' className='join-item' onClick={unregister}>Unregister</Button>
+        </Join>
+      </form>
+
+      <div className='self-center flex flex-col gap-2 mb-4'>
+        <label>No longer want to receive any emails?</label>
+        <Tooltip message='This will unregister you from all CRNs'>
+          <Button size='sm' color='error' onClick={purge}>Unsubscribe</Button>
+        </Tooltip>
+      </div>
     </>
   )
 }

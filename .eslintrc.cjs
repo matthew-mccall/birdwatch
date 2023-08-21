@@ -38,7 +38,8 @@ const config = {
     '@typescript-eslint/no-confusing-void-expression': 'off',
     '@typescript-eslint/no-invalid-void-type': 'off',
     '@typescript-eslint/explicit-function-return-type': 'warn',
-    '@typescript-eslint/method-signature-style': 'off'
+    '@typescript-eslint/method-signature-style': 'off',
+    '@typescript-eslint/no-non-null': 'warn'
   }
 }
 
