@@ -145,9 +145,12 @@ class Watcher {
   /**
    * Unregister an email from receiving updates
    * @param email The email
+   * @param crn   The CRN if only for one section
    */
-  async purge (email: string): Promise<void> {
-    for (const [crn, list] of this.listeners.entries()) {
+  async purge (email: string, crn?: string): Promise<void> {
+    for (const [eCrn, list] of this.listeners.entries()) {
+      if (crn && eCrn !== crn) continue
+
       const index = list.indexOf(email)
 
       if (index !== -1) {
