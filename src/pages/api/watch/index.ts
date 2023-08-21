@@ -8,6 +8,9 @@ const WatchBody = z.object({
   email: z.string().email()
 })
 
+/**
+ * Register an email to receive updates for a certain CRN
+ */
 const watch: NextApiHandler = (req, res) => {
   if (req.method !== 'POST') return res.status(405).end('Only POST requests allowed')
 

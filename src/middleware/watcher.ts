@@ -48,6 +48,9 @@ class Watcher {
     this.db = db
   }
 
+  /**
+   * Fetch listeners from database
+   */
   async init (): Promise<void> {
     await db('watchers')
       .select(['email', 'crns'])
@@ -60,6 +63,9 @@ class Watcher {
     await this.scan()
   }
 
+  /**
+   * Scan for seat updates
+   */
   scan (): Promise<void> {
     return axios.get(`${GITHUB_API}/repos/quacs/quacs-data/contents/semester_data`)
       .then(({ data: semesters }) => axios.get<Department[]>(`${GITHUB_CDN}/quacs/quacs-data/master/${semesters[semesters.length].path}/courses.json`))
@@ -89,6 +95,11 @@ class Watcher {
       })
   }
 
+  /**
+   * Register an email to receive updates for a CRN
+   * @param crn   The CRN
+   * @param email The email
+   */
   async register (crn: string, email: string): Promise<void> {
     if (!this.listeners.has(crn)) this.listeners.set(crn, [])
 
@@ -103,6 +114,10 @@ class Watcher {
       })
   }
 
+  /**
+   * Unregister an email from receiving updates
+   * @param email The email
+   */
   async purge (email: string): Promise<void> {
     for (const [crn, list] of this.listeners.entries()) {
       const index = list.indexOf(email)
@@ -121,6 +136,9 @@ class Watcher {
     }
   }
 
+  /***
+   * Set up a cron job to watch for data updates
+   */
   watch (): void {
     cron.schedule('* */30 * * * *', this.scan as () => void)
   }

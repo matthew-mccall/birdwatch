@@ -2,6 +2,9 @@ import { type NextApiHandler } from 'next'
 
 import { watcher } from '~/middleware/watcher'
 
+/**
+ * Unregister an email from receiving seat updates
+ */
 const watch: NextApiHandler = (req, res) => {
   if (req.method !== 'DELETE') return res.status(405).end('Only DELETE requests allowed')
 
