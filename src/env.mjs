@@ -10,7 +10,10 @@ export const env = createEnv({
     NODE_ENV: z.enum(['development', 'test', 'production']),
     DATABASE_CLIENT: z.string(),
     DATABASE_URL: z.string(),
-    SENDER: z.string()
+    MAILER_HOST: z.string(),
+    MAILER_PORT: z.coerce.number(),
+    MAILER_USER: z.string(),
+    MAILER_PASS: z.string()
   },
 
   /**
@@ -30,7 +33,10 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     DATABASE_CLIENT: process.env.DATABASE_CLIENT,
     DATABASE_URL: process.env.DATABASE_URL,
-    SENDER: process.env.SENDER
+    MAILER_HOST: process.env.MAILER_HOST,
+    MAILER_PORT: process.env.MAILER_PORT,
+    MAILER_USER: process.env.MAILER_USER,
+    MAILER_PASS: process.env.MAILER_PASS
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

@@ -1,14 +1,17 @@
 import { type Knex } from 'knex'
 import cron from 'node-cron'
 import axios from 'axios'
-import sendmail from 'sendmail'
+import mailer from 'nodemailer'
 
 import { db } from '~/middleware/database'
 
 import { env } from '~/env.mjs'
 
 const {
-  SENDER
+  MAILER_HOST,
+  MAILER_PORT,
+  MAILER_USER,
+  MAILER_PASS
 } = env
 
 const GITHUB_API = 'https://api.github.com'
@@ -37,7 +40,14 @@ interface Department {
   courses: Course[]
 }
 
-const mailer = sendmail({})
+const transporter = mailer.createTransport({
+  host: MAILER_HOST,
+  port: MAILER_PORT,
+  auth: {
+    user: MAILER_USER,
+    pass: MAILER_PASS
+  }
+})
 
 class Watcher {
   db: Knex
@@ -90,8 +100,7 @@ class Watcher {
 
                 console.log(`emailing ${recipients}`)
 
-                void mailer({
-                  from: SENDER,
+                void transporter.sendMail({
                   to: recipients,
                   subject: `Course [${course.title}] has a seat available!`,
                   text: `${section.rem}/${section.cap} available`
