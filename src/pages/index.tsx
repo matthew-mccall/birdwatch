@@ -12,6 +12,7 @@ const Home: NextPage = () => {
   const fetcher = useFetcher()
 
   const formRef = useRef<HTMLFormElement>(null)
+  const crnRef = useRef<HTMLInputElement>(null)
 
   const register = useCallback(() => {
     if (formRef.current && formRef.current.reportValidity()) {
@@ -28,22 +29,34 @@ const Home: NextPage = () => {
 
   const unregister = useCallback(() => {
     if (formRef.current && formRef.current.reportValidity()) {
-      
+      const data = new FormData(formRef.current)
+
+      fetcher.post('/api/unwatch', {
+        email: data.get('email'),
+        crn: data.get('crn')
+      })
+        .then(() => report({ status: 'success', message: 'Successfully unregistered' }))
+        .catch((err) => report({ status: 'error', message: err.response?.data ?? err.message }))
     }
-  }, [])
+  }, [report, fetcher])
 
   const purge = useCallback(() => {
-    const crnInput = document.getElementById('crn') as HTMLInputElement | null
-    if (!crnInput) return
+    if (!crnRef.current) return
 
-    crnInput.required = false
+    crnRef.current.required = false
 
     if (formRef.current && formRef.current.reportValidity()) {
+      const data = new FormData(formRef.current)
 
+      fetcher.post('/api/unwatch', {
+        email: data.get('email')
+      })
+        .then(() => report({ status: 'success', message: 'Successfully purged email' }))
+        .catch((err) => report({ status: 'error', message: err.response?.data ?? err.message }))
     }
 
-    crnInput.required = true
-  }, [])
+    crnRef.current.required = true
+  }, [report, fetcher])
 
   return (
     <>
@@ -52,7 +65,7 @@ const Home: NextPage = () => {
 
         <Join horizontal>
           <Input name='email' required className='join-item' placeholder='Email...' type='email' />
-          <Input name='crn' required className='join-item' placeholder='CRN...' minLength={5} maxLength={5} />
+          <Input ref={crnRef} name='crn' required className='join-item' placeholder='CRN...' minLength={5} maxLength={5} />
         </Join>
 
         <Join horizontal>
