@@ -61,7 +61,7 @@ const Home: NextPage = () => {
   return (
     <>
       <form className='flex flex-col grow justify-center items-center gap-12' ref={formRef} onSubmit={(e) => e.preventDefault()}>
-        <Image className='drop-shadow-lg rounded-lg' src={banner} alt='QuACS Birdwatch' width={280} />
+        <Image className='drop-shadow-lg rounded-lg' src={banner} alt='QuACS Birdwatch' width={400} />
 
         <Join horizontal>
           <Input name='email' required className='join-item' placeholder='Email...' type='email' />
