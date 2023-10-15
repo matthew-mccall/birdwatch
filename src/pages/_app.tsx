@@ -1,5 +1,6 @@
 import { type AppType } from 'next/dist/shared/lib/utils'
 import Head from 'next/head'
+import { useRouter } from 'next/router'
 import { Theme } from 'react-daisyui'
 import Reporter from '~/components/layout/Reporter'
 import ThemeSwitcher from '~/components/layout/ThemeSwitcher'
@@ -7,12 +8,14 @@ import ThemeSwitcher from '~/components/layout/ThemeSwitcher'
 import '~/styles/globals.css'
 
 const MyApp: AppType = ({ Component, pageProps }) => {
+  const router = useRouter()
+
   return (
     <>
       <Head>
         <title>Birdwatch</title>
         <meta name='description' content='Get notified when seats free up in an RPI course section' />
-        <link rel='icon' href='/favicon.ico' />
+        <link rel='icon' href={router.basePath + '/favicon.ico'} />
 
         <meta property='og:title' content='QuACS Birdwatcher' />
         <meta property='og:type' content='website' />
