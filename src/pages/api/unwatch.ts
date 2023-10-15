@@ -8,14 +8,14 @@ const UnwatchBody = z.object({
   crn: z.coerce.number().optional()
 })
 
-const unwatch: NextApiHandler = (req, res) => {
+const unwatch: NextApiHandler = async (req, res) => {
   try {
     const {
       crn,
       email
     } = UnwatchBody.parse(req.body)
 
-    return watcher.purge(email, crn)
+    await watcher.purge(email, crn)
       .then(() => res.status(200).end())
       .catch((err) => {
         console.error(err)
@@ -23,8 +23,8 @@ const unwatch: NextApiHandler = (req, res) => {
         res.status(500).end()
       })
   } catch (err) {
-    if (err instanceof ZodError) return res.status(400).send(err.message)
-    else return res.status(500).end()
+    if (err instanceof ZodError) res.status(400).send(err.message)
+    else res.status(500).end()
   }
 }
 

@@ -72,7 +72,7 @@ class Watcher {
           for (const row of rows) {
             this.listeners.set(row.crn, row.emails)
 
-            console.log(`init listening for ${row.crn}`)
+            console.log(`Initialized listening for [${row.crn}]`)
           }
         })
 
@@ -85,7 +85,7 @@ class Watcher {
    * Scan for seat updates
    */
   scan (): Promise<void> {
-    console.log('beginning scan')
+    console.info('Beginning scan...')
 
     return axios.get(`${GITHUB_API}/repos/quacs/quacs-data/contents/semester_data`)
       .then(({ data: semesters }) => axios.get<Department[]>(`${GITHUB_CDN}/quacs/quacs-data/master/${semesters[semesters.length - 1].path}/courses.json`))
@@ -98,20 +98,26 @@ class Watcher {
               if (this.listeners.has(section.crn) && section.rem) {
                 const recipients = this.listeners.get(section.crn)?.join(', ') ?? ''
 
-                console.log(`emailing ${recipients}`)
+                console.log(`Emailing [${recipients}]`)
 
                 void transporter.sendMail({
                   to: recipients,
+                  from: {
+                    name: 'QuACS Birdwatch',
+                    address: MAILER_USER
+                  },
                   subject: `Course [${course.title}] has a seat available!`,
-                  text: `${section.rem}/${section.cap} available`
-                }, console.error)
+                  text: `${section.rem}/${section.cap} seats available`
+                }, (err) => {
+                  if (err) console.error(err)
+                })
 
                 void db('watchers')
                   .delete()
                   .where({
                     crn: section.crn
                   })
-                  .then(() => console.log(`deleted ${section.crn}`))
+                  .then(() => console.log(`Deleted ${section.crn}`))
               }
             }
           }
@@ -132,7 +138,6 @@ class Watcher {
     for (const department of this.courseData!) {
       for (const course of department.courses) {
         for (const section of course.sections) {
-          console.log(section.crn, typeof section.crn, section.crn === 664437)
           if (section.crn === crn) {
             found = true
 

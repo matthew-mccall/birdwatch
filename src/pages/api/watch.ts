@@ -11,7 +11,7 @@ const WatchBody = z.object({
 /**
  * Register an email to receive updates for a certain CRN
  */
-const watch: NextApiHandler = (req, res) => {
+const watch: NextApiHandler = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).send('Method not allowed')
 
   try {
@@ -20,7 +20,7 @@ const watch: NextApiHandler = (req, res) => {
       email
     } = WatchBody.parse(req.body)
 
-    return watcher.register(crn, email)
+    await watcher.register(crn, email)
       .then(() => res.status(200).end())
       .catch((err) => {
         if (err.message === 'not found') return res.status(404).send('could not find that CRN')
@@ -30,8 +30,8 @@ const watch: NextApiHandler = (req, res) => {
         res.status(500).end()
       })
   } catch (err) {
-    if (err instanceof ZodError) return res.status(400).send(err.message)
-    else return res.status(500).end()
+    if (err instanceof ZodError) res.status(400).send(err.message)
+    else res.status(500).end()
   }
 }
 
