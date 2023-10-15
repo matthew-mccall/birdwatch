@@ -13,6 +13,12 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         <title>Birdwatch</title>
         <meta name='description' content='Get notified when seats free up in an RPI course section' />
         <link rel='icon' href='/favicon.ico' />
+
+        <meta property='og:title' content='QuACS Birdwatcher' />
+        <meta property='og:type' content='website' />
+        <meta property='og:image' content='http://neumaa2.stu.rpi.edu/birdwatch/images/banner.png' />
+        <meta property='og:description' content='Get notified when seats free up for a class' />
+        <meta name='theme-color' content='#eeb43c' />
       </Head>
 
       <Theme className='min-h-screen flex flex-col'>
