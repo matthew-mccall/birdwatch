@@ -64,8 +64,8 @@ const Home: NextPage = () => {
         <Image className='drop-shadow-lg rounded-lg' src={banner} alt='QuACS Birdwatch' width={400} />
 
         <Join horizontal>
-          <Input name='email' required className='join-item' placeholder='Email...' type='email' />
-          <Input ref={crnRef} name='crn' required className='join-item' placeholder='CRN...' minLength={5} maxLength={5} />
+          <Input name='email' required className='join-item w-full' placeholder='Email...' type='email' />
+          <Input ref={crnRef} name='crn' required className='join-item w-full' placeholder='CRN...' minLength={5} maxLength={5} />
         </Join>
 
         <Join horizontal>
