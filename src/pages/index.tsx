@@ -4,10 +4,12 @@ import { useCallback, useContext, useRef } from 'react'
 import { Button, Input, Join, Tooltip } from 'react-daisyui'
 import { ReporterContext } from '~/components/layout/Reporter'
 import { useFetcher } from '~/hooks/fetcher'
+import { useRouter } from 'next/router'
 
 import banner from 'public/images/banner.png'
 
 const Home: NextPage = () => {
+  const router = useRouter()
   const { dispatch: report } = useContext(ReporterContext)
   const fetcher = useFetcher()
 
@@ -18,27 +20,29 @@ const Home: NextPage = () => {
     if (formRef.current && formRef.current.reportValidity()) {
       const data = new FormData(formRef.current)
 
-      fetcher.post('/api/watch', {
+      fetcher.post(router.basePath + '/api/watch', {
         email: data.get('email'),
         crn: data.get('crn')
       })
         .then(() => report({ status: 'success', message: 'Successfully registered' }))
         .catch((err) => report({ status: 'error', message: err.response?.data ?? err.message }))
+        .finally(() => crnRef.current && (crnRef.current.value = ''))
     }
-  }, [report, fetcher])
+  }, [report, fetcher, router])
 
   const unregister = useCallback(() => {
     if (formRef.current && formRef.current.reportValidity()) {
       const data = new FormData(formRef.current)
 
-      fetcher.post('/api/unwatch', {
+      fetcher.post(router.basePath + '/api/unwatch', {
         email: data.get('email'),
         crn: data.get('crn')
       })
         .then(() => report({ status: 'success', message: 'Successfully unregistered' }))
         .catch((err) => report({ status: 'error', message: err.response?.data ?? err.message }))
+        .finally(() => crnRef.current && (crnRef.current.value = ''))
     }
-  }, [report, fetcher])
+  }, [report, fetcher, router])
 
   const purge = useCallback(() => {
     if (!crnRef.current) return
@@ -48,7 +52,7 @@ const Home: NextPage = () => {
     if (formRef.current && formRef.current.reportValidity()) {
       const data = new FormData(formRef.current)
 
-      fetcher.post('/api/unwatch', {
+      fetcher.post(router.basePath + '/api/unwatch', {
         email: data.get('email')
       })
         .then(() => report({ status: 'success', message: 'Successfully purged email' }))
@@ -56,7 +60,7 @@ const Home: NextPage = () => {
     }
 
     crnRef.current.required = true
-  }, [report, fetcher])
+  }, [report, fetcher, router])
 
   return (
     <>
