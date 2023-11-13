@@ -158,11 +158,13 @@ class Watcher {
     this.listeners.get(crn)?.push(email)
 
     await db('watchers')
-      .update({
-        emails: db.raw('ARRAY_APPEND(emails, ?)', [email])
+      .insert({
+        crn,
+        emails: [email]
       })
-      .where({
-        crn
+      .onConflict('crn')
+      .merge({
+        emails: db.raw('watchers.emails || EXCLUDED.emails')
       })
       .then(() => console.log(`added ${email} to ${crn}`))
   }
