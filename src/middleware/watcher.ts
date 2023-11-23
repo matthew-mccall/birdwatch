@@ -4,7 +4,6 @@ import axios from 'axios'
 import mailer from 'nodemailer'
 
 import { db } from '~/middleware/database'
-
 import { env } from '~/env.mjs'
 
 const {
@@ -23,6 +22,7 @@ interface WatcherRow {
 }
 
 interface Section {
+  sec: string
   cap: number
   rem: number
   crn: number
@@ -51,7 +51,6 @@ const transporter = mailer.createTransport({
 
 class Watcher {
   db: Knex
-  listeners = new Map<number, string[]>()
   courseData?: Department[]
   initialized = false
 
@@ -60,21 +59,11 @@ class Watcher {
   }
 
   /**
-   * Fetch listeners from database
+   * Start scan
    */
   async init (): Promise<void> {
     if (!this.initialized) {
       this.initialized = true
-
-      await db('watchers')
-        .select(['crn', 'emails'])
-        .then((rows: WatcherRow[]) => {
-          for (const row of rows) {
-            this.listeners.set(row.crn, row.emails)
-
-            console.log(`Initialized listening for [${row.crn}]`)
-          }
-        })
 
       await this.scan()
       this.watch()
@@ -87,16 +76,22 @@ class Watcher {
   scan (): Promise<void> {
     console.info('Beginning scan...')
 
+    const listenerPromise: Promise<WatcherRow[]> = db('watchers')
+      .select(['crn', 'emails'])
+
     return axios.get(`${GITHUB_API}/repos/quacs/quacs-data/contents/semester_data`)
       .then(({ data: semesters }) => axios.get<Department[]>(`${GITHUB_CDN}/quacs/quacs-data/master/${semesters[semesters.length - 1].path}/courses.json`))
-      .then(({ data: departments }) => {
+      .then(async ({ data: departments }) => {
         this.courseData = departments
+
+        const listeners = new Map<number, string[]>()
+        for (const listener of await listenerPromise) listeners.set(listener.crn, listener.emails)
 
         for (const department of departments) {
           for (const course of department.courses) {
             for (const section of course.sections) {
-              if (this.listeners.has(section.crn) && section.rem) {
-                const recipients = this.listeners.get(section.crn)?.join(', ') ?? ''
+              if (listeners.has(section.crn) && section.rem) {
+                const recipients = listeners.get(section.crn)?.join(', ') ?? ''
 
                 console.log(`Emailing [${recipients}]`)
 
@@ -106,7 +101,7 @@ class Watcher {
                     name: 'QuACS Birdwatch',
                     address: MAILER_USER
                   },
-                  subject: `Course [${course.title}] has a seat available!`,
+                  subject: `Course [${course.title}] section [${section.sec}] has a seat available!`,
                   text: `${section.rem}/${section.cap} seats available`
                 }, (err) => {
                   if (err) console.error(err)
@@ -153,10 +148,6 @@ class Watcher {
 
     if (!found) throw Error('not found')
 
-    if (!this.listeners.has(crn)) this.listeners.set(crn, [])
-
-    this.listeners.get(crn)?.push(email)
-
     await db('watchers')
       .insert({
         crn,
@@ -174,28 +165,23 @@ class Watcher {
    * @param email The email
    * @param crn   The CRN if only for one section
    */
-  async purge (email: string, crn?: number): Promise<void> {
-    for (const [eCrn, list] of this.listeners.entries()) {
-      if (crn && eCrn !== crn) continue
+  purge (email: string, crn?: number): Promise<void> {
+    let query = db('watchers')
+      .update({
+        emails: db.raw('ARRAY_REMOVE(emails, ?)', [email])
+      })
 
-      const index = list.indexOf(email)
-
-      if (index !== -1) {
-        list.splice(index, 1)
-
-        await db('watchers')
-          .update({
-            emails: db.raw('ARRAY_REMOVE(emails, ?)', [email])
-          })
-          .where({
-            crn
-          })
-          .then(() => console.log(`removed ${email} from ${crn}`))
-      }
+    if (crn) {
+      query = query.where({
+        crn
+      })
     }
+
+    return query
+      .then((num) => console.log(`removed ${email} from ${crn ?? `${num} CRNs`}`))
   }
 
-  /***
+  /**
    * Set up a cron job to watch for data updates
    */
   watch (): void {
