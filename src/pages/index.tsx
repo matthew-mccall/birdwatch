@@ -1,4 +1,4 @@
-import { type NextPage } from 'next'
+import type { NextPage } from 'next'
 import Image from 'next/image'
 import { useCallback, useContext, useRef } from 'react'
 import { Button, Input, Join, Tooltip } from 'react-daisyui'
@@ -17,7 +17,7 @@ const Home: NextPage = () => {
   const crnRef = useRef<HTMLInputElement>(null)
 
   const register = useCallback(() => {
-    if (formRef.current && formRef.current.reportValidity()) {
+    if (formRef.current?.reportValidity()) {
       const data = new FormData(formRef.current)
 
       fetcher.post(router.basePath + '/api/watch', {
@@ -31,7 +31,7 @@ const Home: NextPage = () => {
   }, [report, fetcher, router])
 
   const unregister = useCallback(() => {
-    if (formRef.current && formRef.current.reportValidity()) {
+    if (formRef.current?.reportValidity()) {
       const data = new FormData(formRef.current)
 
       fetcher.post(router.basePath + '/api/unwatch', {
@@ -49,7 +49,7 @@ const Home: NextPage = () => {
 
     crnRef.current.required = false
 
-    if (formRef.current && formRef.current.reportValidity()) {
+    if (formRef.current?.reportValidity()) {
       const data = new FormData(formRef.current)
 
       fetcher.post(router.basePath + '/api/unwatch', {
@@ -68,8 +68,8 @@ const Home: NextPage = () => {
         <Image className='drop-shadow-lg rounded-lg' src={banner} alt='QuACS Birdwatch' width={400} />
 
         <Join horizontal>
-          <Input name='email' required className='join-item w-full' placeholder='Email...' type='email' />
-          <Input ref={crnRef} name='crn' required className='join-item w-full' placeholder='CRN...' minLength={5} maxLength={5} />
+          <Input name='email' required className='join-item w-full focus:z-10' placeholder='Email...' type='email' />
+          <Input ref={crnRef} name='crn' required className='join-item w-full focus:z-10' placeholder='CRN...' minLength={5} maxLength={5} />
         </Join>
 
         <Join horizontal>
@@ -78,7 +78,7 @@ const Home: NextPage = () => {
         </Join>
       </form>
 
-      <div className='self-center flex flex-col gap-2 mb-4'>
+      <div className='self-center flex flex-col items-center gap-2 mb-4'>
         <label>No longer want to receive any emails?</label>
         <Tooltip message='This will unregister you from all CRNs'>
           <Button size='sm' color='error' onClick={purge}>Unsubscribe</Button>

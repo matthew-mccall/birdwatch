@@ -1,4 +1,4 @@
-import { type Knex } from 'knex'
+import type { Knex } from 'knex'
 import cron from 'node-cron'
 import axios from 'axios'
 import mailer from 'nodemailer'
@@ -95,7 +95,7 @@ class Watcher {
 
                 console.log(`Emailing [${recipients}]`)
 
-                void transporter.sendMail({
+                transporter.sendMail({
                   to: recipients,
                   from: {
                     name: 'QuACS Birdwatch',
@@ -185,7 +185,7 @@ class Watcher {
    * Set up a cron job to watch for data updates
    */
   watch (): void {
-    cron.schedule('*/30 * * * *', this.scan as () => void)
+    cron.schedule('*/30 * * * *', () => void this.scan())
   }
 }
 

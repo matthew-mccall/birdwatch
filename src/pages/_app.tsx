@@ -1,4 +1,4 @@
-import { type AppType } from 'next/dist/shared/lib/utils'
+import type { AppType } from 'next/dist/shared/lib/utils'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { Theme } from 'react-daisyui'

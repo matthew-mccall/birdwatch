@@ -1,4 +1,4 @@
-import { type NextApiHandler } from 'next'
+import type { NextApiHandler } from 'next'
 import { ZodError, z } from 'zod'
 
 import { watcher } from '~/middleware/watcher'

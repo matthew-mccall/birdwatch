@@ -7,7 +7,6 @@ await import('./src/env.mjs')
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
-  basePath: '/birdwatch',
 
   /**
    * If you are using `appDir` then you must comment the below `i18n` config out.
@@ -18,9 +17,8 @@ const config = {
     locales: ['en'],
     defaultLocale: 'en'
   },
-  experimental: {
-    instrumentationHook: true
-  }
+  transpilePackages: ['react-daisyui'],
+  serverExternalPackages: ['knex']
 }
 
-export default config;
+export default config
