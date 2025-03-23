@@ -90,7 +90,7 @@ class Watcher {
         for (const department of departments) {
           for (const course of department.courses) {
             for (const section of course.sections) {
-              if (listeners.has(section.crn) && section.rem) {
+              if (listeners.has(section.crn) && section.rem > 0) {
                 const recipients = listeners.get(section.crn)?.join(', ') ?? ''
 
                 console.log(`Emailing [${recipients}]`)
