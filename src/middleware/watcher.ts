@@ -160,7 +160,6 @@ class Watcher {
       })
       .then(() => {
         console.log(`added ${email} to ${crn}`)
-        // Send registration confirmation email using existing transporter
         transporter.sendMail({
           to: email,
           from: {
@@ -193,7 +192,6 @@ class Watcher {
     return query
       .then((num) => {
         console.log(`removed ${email} from ${crn ?? `${num} CRNs`}`)
-        // Send unregistration confirmation email using existing transporter
         const subject = crn ? `Unregistered from CRN ${crn}` : 'Unregistered from QuACS Birdwatch notifications'
         const text = crn
           ? `You will no longer receive notifications for CRN ${crn}.`
