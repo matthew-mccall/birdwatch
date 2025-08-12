@@ -1,0 +1,36 @@
+.git
+.gitignore
+.github/
+
+# Node/Bun dependencies and caches
+node_modules/
+.bun/
+.pnpm-store/
+
+# Next.js build output
+.next/
+out/
+
+# Build artefacts
+build/
+dist/
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+
+# Logs and coverage
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun-*.log
+coverage/
+
+# Env files (supply via compose env or secrets)
+.env
+.env.*
+
+# Large source assets not needed in container context
+assets/*.xcf
