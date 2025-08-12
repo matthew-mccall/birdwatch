@@ -43,6 +43,7 @@ interface Department {
 const transporter = mailer.createTransport({
   host: MAILER_HOST,
   port: MAILER_PORT,
+  requireTLS: true,
   auth: {
     user: MAILER_USER,
     pass: MAILER_PASS
@@ -157,7 +158,18 @@ class Watcher {
       .merge({
         emails: db.raw('watchers.emails || EXCLUDED.emails')
       })
-      .then(() => console.log(`added ${email} to ${crn}`))
+      .then(() => {
+        console.log(`added ${email} to ${crn}`)
+        transporter.sendMail({
+          to: email,
+          from: {
+            name: 'QuACS Birdwatch',
+            address: MAILER_USER
+          },
+          subject: `Registered for CRN ${crn}`,
+          text: `You will receive notifications when seats are available for CRN ${crn}.`
+        }, (err) => { if (err) console.error(err) })
+      })
   }
 
   /**
@@ -178,7 +190,22 @@ class Watcher {
     }
 
     return query
-      .then((num) => console.log(`removed ${email} from ${crn ?? `${num} CRNs`}`))
+      .then((num) => {
+        console.log(`removed ${email} from ${crn ?? `${num} CRNs`}`)
+        const subject = crn ? `Unregistered from CRN ${crn}` : 'Unregistered from QuACS Birdwatch notifications'
+        const text = crn
+          ? `You will no longer receive notifications for CRN ${crn}.`
+          : 'You will no longer receive notifications for your watched CRNs.'
+        transporter.sendMail({
+          to: email,
+          from: {
+            name: 'QuACS Birdwatch',
+            address: MAILER_USER
+          },
+          subject,
+          text
+        }, (err) => { if (err) console.error(err) })
+      })
   }
 
   /**
