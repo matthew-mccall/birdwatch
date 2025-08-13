@@ -2,23 +2,22 @@ version: "3.8"
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: oven/bun:1
     working_dir: /app
-    # In production: the image is built (build stage handles bun build), then the container runs migrations and starts the production server
-    command: sh -c "until bunx knex migrate:latest; do echo 'Waiting for DB to be ready...'; sleep 2; done && bunx next start -H 0.0.0.0"
-    # No volume mount in production; container keeps its own built assets
+    # In development: mount source, install, run migrations (retry), then start Next dev server
+    command: sh -c "bun install && until bunx knex migrate:latest; do echo 'Waiting for DB to be ready...'; sleep 2; done && bunx next dev -H 0.0.0.0"
+    volumes:
+      - ./:/app:Z
     ports:
       - "3000:3000"
     env_file:
       - .env.local
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
+      SKIP_ENV_VALIDATION: "1"
       DATABASE_CLIENT: pg
       DATABASE_URL: postgres://postgres:postgres@db:5432/postgres
       NEXT_TELEMETRY_DISABLED: "1"
-      # Provide any missing defaults expected by env schema
       MAILER_PORT: "587"
     depends_on:
       - db
